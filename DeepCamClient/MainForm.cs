@@ -1,3 +1,4 @@
+using DirectShowLib;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 
@@ -26,22 +27,39 @@ namespace DeepCamClient
             {
                 comboBoxDevices.Items.Clear();
 
-                // OpenCV typically supports camera indices 0-9
-                // We'll probe for available cameras
-                int deviceCount = 0;
-                for (int i = 0; i < 10; i++)
+                // Try to get device names using DirectShow
+                var videoInputDevices = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
+
+                int deviceIndex = 0;
+                foreach (DsDevice device in videoInputDevices)
                 {
-                    using (var testCapture = new VideoCapture(i))
+                    // Test if camera is accessible via OpenCV
+                    using (var testCapture = new VideoCapture(deviceIndex))
                     {
                         if (testCapture.IsOpened())
                         {
-                            comboBoxDevices.Items.Add($"Camera {i}");
-                            deviceCount++;
+                            comboBoxDevices.Items.Add(device.Name);
+                            deviceIndex++;
                         }
                     }
                 }
 
-                if (deviceCount > 0)
+                // Fallback: if DirectShow doesn't work, use generic names
+                if (comboBoxDevices.Items.Count == 0)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        using (var testCapture = new VideoCapture(i))
+                        {
+                            if (testCapture.IsOpened())
+                            {
+                                comboBoxDevices.Items.Add($"Camera {i}");
+                            }
+                        }
+                    }
+                }
+
+                if (comboBoxDevices.Items.Count > 0)
                 {
                     comboBoxDevices.SelectedIndex = 0;
                 }
@@ -220,6 +238,41 @@ namespace DeepCamClient
                         break;
                     }
                 }
+            }
+        }
+
+        private Bitmap ResizeImageToFit(Bitmap originalImage)
+        {
+            try
+            {
+                int pbWidth = pictureBoxPreview.Width;
+                int pbHeight = pictureBoxPreview.Height;
+
+                if (pbWidth <= 0 || pbHeight <= 0)
+                    return originalImage;
+
+                // Calculate scaling factor to maintain aspect ratio
+                float scaleX = (float)pbWidth / originalImage.Width;
+                float scaleY = (float)pbHeight / originalImage.Height;
+                float scale = Math.Min(scaleX, scaleY);
+
+                int newWidth = (int)(originalImage.Width * scale);
+                int newHeight = (int)(originalImage.Height * scale);
+
+                var resizedImage = new Bitmap(newWidth, newHeight);
+                using (var graphics = Graphics.FromImage(resizedImage))
+                {
+                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    graphics.DrawImage(originalImage, 0, 0, newWidth, newHeight);
+                }
+
+                originalImage.Dispose();
+                return resizedImage;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Resize error: " + ex.Message);
+                return originalImage;
             }
         }
 

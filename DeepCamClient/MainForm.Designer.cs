@@ -32,20 +32,22 @@
             this.buttonRefrechDevices = new System.Windows.Forms.Button();
             this.buttonStart = new System.Windows.Forms.Button();
             this.pictureBoxPreview = new System.Windows.Forms.PictureBox();
+            this.panel1 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // comboBoxDevices
             // 
             this.comboBoxDevices.FormattingEnabled = true;
-            this.comboBoxDevices.Location = new System.Drawing.Point(63, 46);
+            this.comboBoxDevices.Location = new System.Drawing.Point(3, 4);
             this.comboBoxDevices.Name = "comboBoxDevices";
             this.comboBoxDevices.Size = new System.Drawing.Size(191, 23);
             this.comboBoxDevices.TabIndex = 0;
             // 
             // buttonRefrechDevices
             // 
-            this.buttonRefrechDevices.Location = new System.Drawing.Point(260, 46);
+            this.buttonRefrechDevices.Location = new System.Drawing.Point(200, 4);
             this.buttonRefrechDevices.Name = "buttonRefrechDevices";
             this.buttonRefrechDevices.Size = new System.Drawing.Size(75, 23);
             this.buttonRefrechDevices.TabIndex = 1;
@@ -55,7 +57,7 @@
             // 
             // buttonStart
             // 
-            this.buttonStart.Location = new System.Drawing.Point(356, 46);
+            this.buttonStart.Location = new System.Drawing.Point(3, 33);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(75, 23);
             this.buttonStart.TabIndex = 2;
@@ -65,11 +67,24 @@
             // 
             // pictureBoxPreview
             // 
-            this.pictureBoxPreview.Location = new System.Drawing.Point(32, 100);
+            this.pictureBoxPreview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBoxPreview.Location = new System.Drawing.Point(0, 100);
             this.pictureBoxPreview.Name = "pictureBoxPreview";
-            this.pictureBoxPreview.Size = new System.Drawing.Size(694, 328);
+            this.pictureBoxPreview.Size = new System.Drawing.Size(800, 350);
+            this.pictureBoxPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBoxPreview.TabIndex = 3;
             this.pictureBoxPreview.TabStop = false;
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.buttonStart);
+            this.panel1.Controls.Add(this.buttonRefrechDevices);
+            this.panel1.Controls.Add(this.comboBoxDevices);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(800, 100);
+            this.panel1.TabIndex = 4;
             // 
             // MainForm
             // 
@@ -77,15 +92,14 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.pictureBoxPreview);
-            this.Controls.Add(this.buttonStart);
-            this.Controls.Add(this.buttonRefrechDevices);
-            this.Controls.Add(this.comboBoxDevices);
+            this.Controls.Add(this.panel1);
             this.DoubleBuffered = true;
             this.Name = "MainForm";
             this.Text = "Deep Cam Client";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.Load += new System.EventHandler(this.FormMain_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).EndInit();
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -96,5 +110,6 @@
         private Button buttonRefrechDevices;
         private Button buttonStart;
         private PictureBox pictureBoxPreview;
+        private Panel panel1;
     }
 }
