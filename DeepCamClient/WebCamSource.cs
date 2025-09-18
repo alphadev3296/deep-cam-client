@@ -11,6 +11,9 @@ namespace DeepCamClient
         private Task _captureTask;
         private bool _isCapturing;
         private bool _disposed;
+        private readonly object _captureLock = new object();
+        private int _consecutiveFailures = 0;
+        private const int MAX_CONSECUTIVE_FAILURES = 10;
 
         // Events
         public event EventHandler<FrameCapturedEventArgs> FrameCaptured;
@@ -19,7 +22,16 @@ namespace DeepCamClient
 
         // Properties
         public bool IsCapturing => _isCapturing;
-        public bool IsOpened => _videoCapture?.IsOpened() ?? false;
+        public bool IsOpened
+        {
+            get
+            {
+                lock (_captureLock)
+                {
+                    return _videoCapture?.IsOpened() ?? false;
+                }
+            }
+        }
         public int CurrentCameraIndex { get; private set; } = -1;
         public string CurrentCameraName { get; private set; } = string.Empty;
 
@@ -47,37 +59,70 @@ namespace DeepCamClient
                 foreach (DsDevice device in videoInputDevices)
                 {
                     // Test if camera is accessible via OpenCV
-                    using (var testCapture = new VideoCapture(deviceIndex))
+                    try
                     {
-                        if (testCapture.IsOpened())
+                        using (var testCapture = new VideoCapture(deviceIndex, VideoCaptureAPIs.ANY))
                         {
-                            devices.Add(new CameraDevice
+                            // Give the camera some time to initialize
+                            Thread.Sleep(100);
+
+                            if (testCapture.IsOpened())
                             {
-                                Index = deviceIndex,
-                                Name = device.Name,
-                                IsAvailable = true
-                            });
-                            deviceIndex++;
+                                // Try to read a frame to verify it actually works
+                                using (var testFrame = new Mat())
+                                {
+                                    if (testCapture.Read(testFrame))
+                                    {
+                                        devices.Add(new CameraDevice
+                                        {
+                                            Index = deviceIndex,
+                                            Name = device.Name,
+                                            IsAvailable = true
+                                        });
+                                    }
+                                }
+                            }
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error testing device {deviceIndex}: {ex.Message}");
+                    }
+
+                    deviceIndex++;
                 }
 
                 // Fallback: if DirectShow doesn't work, use generic names
                 if (devices.Count == 0)
                 {
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < 5; i++) // Reduced from 10 to 5 for faster enumeration
                     {
-                        using (var testCapture = new VideoCapture(i))
+                        try
                         {
-                            if (testCapture.IsOpened())
+                            using (var testCapture = new VideoCapture(i, VideoCaptureAPIs.ANY))
                             {
-                                devices.Add(new CameraDevice
+                                Thread.Sleep(100);
+
+                                if (testCapture.IsOpened())
                                 {
-                                    Index = i,
-                                    Name = $"Camera {i}",
-                                    IsAvailable = true
-                                });
+                                    using (var testFrame = new Mat())
+                                    {
+                                        if (testCapture.Read(testFrame))
+                                        {
+                                            devices.Add(new CameraDevice
+                                            {
+                                                Index = i,
+                                                Name = $"Camera {i}",
+                                                IsAvailable = true
+                                            });
+                                        }
+                                    }
+                                }
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error testing generic device {i}: {ex.Message}");
                         }
                     }
                 }
@@ -95,32 +140,79 @@ namespace DeepCamClient
         /// </summary>
         public bool OpenCamera(int cameraIndex, string cameraName = "")
         {
-            try
+            lock (_captureLock)
             {
-                // Close existing camera if open
-                CloseCamera();
-
-                _videoCapture = new VideoCapture(cameraIndex);
-
-                if (!_videoCapture.IsOpened())
+                try
                 {
-                    OnErrorOccurred($"Failed to open camera at index {cameraIndex}");
+                    // Close existing camera if open
+                    CloseCamera();
+
+                    // Reset failure counter
+                    _consecutiveFailures = 0;
+
+                    // Try different capture backends for better compatibility
+                    VideoCaptureAPIs[] backends = {
+                        VideoCaptureAPIs.DSHOW,     // DirectShow (Windows)
+                        VideoCaptureAPIs.MSMF,      // Media Foundation (Windows)
+                        VideoCaptureAPIs.ANY        // Auto-detect
+                    };
+
+                    foreach (var backend in backends)
+                    {
+                        try
+                        {
+                            _videoCapture = new VideoCapture(cameraIndex, backend);
+
+                            // Give camera time to initialize
+                            Thread.Sleep(200);
+
+                            if (_videoCapture.IsOpened())
+                            {
+                                // Test with a frame read
+                                using (var testFrame = new Mat())
+                                {
+                                    if (_videoCapture.Read(testFrame) && !testFrame.Empty())
+                                    {
+                                        Console.WriteLine($"Successfully opened camera {cameraIndex} with backend {backend}");
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // If we reach here, this backend didn't work
+                            _videoCapture?.Release();
+                            _videoCapture?.Dispose();
+                            _videoCapture = null;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to open camera with backend {backend}: {ex.Message}");
+                            _videoCapture?.Release();
+                            _videoCapture?.Dispose();
+                            _videoCapture = null;
+                        }
+                    }
+
+                    if (_videoCapture == null || !_videoCapture.IsOpened())
+                    {
+                        OnErrorOccurred($"Failed to open camera at index {cameraIndex} with any backend");
+                        return false;
+                    }
+
+                    CurrentCameraIndex = cameraIndex;
+                    CurrentCameraName = string.IsNullOrEmpty(cameraName) ? $"Camera {cameraIndex}" : cameraName;
+
+                    // Apply camera settings
+                    ApplyCameraSettings();
+
+                    OnStatusChanged(new CameraStatusChangedEventArgs(CameraStatus.Opened, CurrentCameraName));
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    OnErrorOccurred($"Error opening camera: {ex.Message}");
                     return false;
                 }
-
-                CurrentCameraIndex = cameraIndex;
-                CurrentCameraName = string.IsNullOrEmpty(cameraName) ? $"Camera {cameraIndex}" : cameraName;
-
-                // Apply camera settings
-                ApplyCameraSettings();
-
-                OnStatusChanged(new CameraStatusChangedEventArgs(CameraStatus.Opened, CurrentCameraName));
-                return true;
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred($"Error opening camera: {ex.Message}");
-                return false;
             }
         }
 
@@ -129,31 +221,35 @@ namespace DeepCamClient
         /// </summary>
         public bool StartCapture()
         {
-            if (_videoCapture == null || !_videoCapture.IsOpened())
+            lock (_captureLock)
             {
-                OnErrorOccurred("Camera not opened. Call OpenCamera first.");
-                return false;
-            }
+                if (_videoCapture == null || !_videoCapture.IsOpened())
+                {
+                    OnErrorOccurred("Camera not opened. Call OpenCamera first.");
+                    return false;
+                }
 
-            if (_isCapturing)
-            {
-                return true; // Already capturing
-            }
+                if (_isCapturing)
+                {
+                    return true; // Already capturing
+                }
 
-            try
-            {
-                _isCapturing = true;
-                _cancellationTokenSource = new CancellationTokenSource();
-                _captureTask = Task.Run(() => CaptureLoop(_cancellationTokenSource.Token));
+                try
+                {
+                    _isCapturing = true;
+                    _consecutiveFailures = 0;
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    _captureTask = Task.Run(() => CaptureLoop(_cancellationTokenSource.Token));
 
-                OnStatusChanged(new CameraStatusChangedEventArgs(CameraStatus.Capturing, CurrentCameraName));
-                return true;
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred($"Error starting capture: {ex.Message}");
-                StopCapture();
-                return false;
+                    OnStatusChanged(new CameraStatusChangedEventArgs(CameraStatus.Capturing, CurrentCameraName));
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    OnErrorOccurred($"Error starting capture: {ex.Message}");
+                    StopCapture();
+                    return false;
+                }
             }
         }
 
@@ -194,20 +290,23 @@ namespace DeepCamClient
         {
             StopCapture();
 
-            try
+            lock (_captureLock)
             {
-                _videoCapture?.Release();
-                _videoCapture?.Dispose();
-                _videoCapture = null;
+                try
+                {
+                    _videoCapture?.Release();
+                    _videoCapture?.Dispose();
+                    _videoCapture = null;
 
-                CurrentCameraIndex = -1;
-                CurrentCameraName = string.Empty;
+                    CurrentCameraIndex = -1;
+                    CurrentCameraName = string.Empty;
 
-                OnStatusChanged(new CameraStatusChangedEventArgs(CameraStatus.Closed, ""));
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred($"Error closing camera: {ex.Message}");
+                    OnStatusChanged(new CameraStatusChangedEventArgs(CameraStatus.Closed, ""));
+                }
+                catch (Exception ex)
+                {
+                    OnErrorOccurred($"Error closing camera: {ex.Message}");
+                }
             }
         }
 
@@ -216,27 +315,43 @@ namespace DeepCamClient
         /// </summary>
         public Bitmap CaptureStillImage()
         {
-            if (_videoCapture == null || !_videoCapture.IsOpened())
+            lock (_captureLock)
             {
-                throw new InvalidOperationException("Camera not opened");
-            }
-
-            try
-            {
-                using (var frame = new Mat())
+                if (_videoCapture == null || !_videoCapture.IsOpened())
                 {
-                    if (_videoCapture.Read(frame) && !frame.Empty())
+                    throw new InvalidOperationException("Camera not opened");
+                }
+
+                try
+                {
+                    using (var frame = new Mat())
                     {
-                        return BitmapConverter.ToBitmap(frame);
+                        // Try multiple times to get a good frame
+                        for (int attempt = 0; attempt < 3; attempt++)
+                        {
+                            try
+                            {
+                                if (_videoCapture.Read(frame) && !frame.Empty())
+                                {
+                                    return BitmapConverter.ToBitmap(frame);
+                                }
+                                Thread.Sleep(33); // Wait a bit before next attempt
+                            }
+                            catch (AccessViolationException)
+                            {
+                                if (attempt == 2) throw; // Re-throw on last attempt
+                                Thread.Sleep(100);
+                            }
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred($"Error capturing still image: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    OnErrorOccurred($"Error capturing still image: {ex.Message}");
+                }
 
-            return null;
+                return null;
+            }
         }
 
         /// <summary>
@@ -268,28 +383,31 @@ namespace DeepCamClient
         /// </summary>
         public CameraInfo GetCameraInfo()
         {
-            if (_videoCapture == null || !_videoCapture.IsOpened())
-                return null;
+            lock (_captureLock)
+            {
+                if (_videoCapture == null || !_videoCapture.IsOpened())
+                    return null;
 
-            try
-            {
-                return new CameraInfo
+                try
                 {
-                    Name = CurrentCameraName,
-                    Index = CurrentCameraIndex,
-                    Width = (int)_videoCapture.Get(VideoCaptureProperties.FrameWidth),
-                    Height = (int)_videoCapture.Get(VideoCaptureProperties.FrameHeight),
-                    Fps = _videoCapture.Get(VideoCaptureProperties.Fps),
-                    Brightness = _videoCapture.Get(VideoCaptureProperties.Brightness),
-                    Contrast = _videoCapture.Get(VideoCaptureProperties.Contrast),
-                    Saturation = _videoCapture.Get(VideoCaptureProperties.Saturation),
-                    Hue = _videoCapture.Get(VideoCaptureProperties.Hue)
-                };
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred($"Error getting camera info: {ex.Message}");
-                return null;
+                    return new CameraInfo
+                    {
+                        Name = CurrentCameraName,
+                        Index = CurrentCameraIndex,
+                        Width = (int)_videoCapture.Get(VideoCaptureProperties.FrameWidth),
+                        Height = (int)_videoCapture.Get(VideoCaptureProperties.FrameHeight),
+                        Fps = _videoCapture.Get(VideoCaptureProperties.Fps),
+                        Brightness = _videoCapture.Get(VideoCaptureProperties.Brightness),
+                        Contrast = _videoCapture.Get(VideoCaptureProperties.Contrast),
+                        Saturation = _videoCapture.Get(VideoCaptureProperties.Saturation),
+                        Hue = _videoCapture.Get(VideoCaptureProperties.Hue)
+                    };
+                }
+                catch (Exception ex)
+                {
+                    OnErrorOccurred($"Error getting camera info: {ex.Message}");
+                    return null;
+                }
             }
         }
 
@@ -300,9 +418,12 @@ namespace DeepCamClient
         {
             Settings = newSettings ?? throw new ArgumentNullException(nameof(newSettings));
 
-            if (_videoCapture != null && _videoCapture.IsOpened())
+            lock (_captureLock)
             {
-                ApplyCameraSettings();
+                if (_videoCapture != null && _videoCapture.IsOpened())
+                {
+                    ApplyCameraSettings();
+                }
             }
         }
 
@@ -344,6 +465,9 @@ namespace DeepCamClient
 
                 if (Settings.Hue >= 0)
                     _videoCapture.Set(VideoCaptureProperties.Hue, Settings.Hue);
+
+                // Allow camera to stabilize after settings change
+                Thread.Sleep(100);
             }
             catch (Exception ex)
             {
@@ -353,22 +477,79 @@ namespace DeepCamClient
 
         private void CaptureLoop(CancellationToken cancellationToken)
         {
-            using (var frame = new Mat())
+            Mat frame = null;
+
+            try
             {
+                frame = new Mat();
+
                 while (_isCapturing && !cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        if (_videoCapture.Read(frame) && !frame.Empty())
+                        bool frameRead = false;
+
+                        lock (_captureLock)
                         {
+                            if (_videoCapture != null && _videoCapture.IsOpened())
+                            {
+                                try
+                                {
+                                    // Try to read frame with timeout protection
+                                    frameRead = _videoCapture.Read(frame);
+                                }
+                                catch (AccessViolationException ex)
+                                {
+                                    _consecutiveFailures++;
+                                    Console.WriteLine($"AccessViolationException in frame read (failure #{_consecutiveFailures}): {ex.Message}");
+
+                                    if (_consecutiveFailures >= MAX_CONSECUTIVE_FAILURES)
+                                    {
+                                        OnErrorOccurred("Too many consecutive access violations. Stopping capture.");
+                                        break;
+                                    }
+
+                                    // Wait longer before retry
+                                    Thread.Sleep(200);
+                                    continue;
+                                }
+                                catch (Exception ex)
+                                {
+                                    _consecutiveFailures++;
+                                    Console.WriteLine($"Exception in frame read: {ex.Message}");
+
+                                    if (_consecutiveFailures >= MAX_CONSECUTIVE_FAILURES)
+                                    {
+                                        OnErrorOccurred($"Too many consecutive failures: {ex.Message}");
+                                        break;
+                                    }
+
+                                    Thread.Sleep(100);
+                                    continue;
+                                }
+                            }
+                        }
+
+                        if (frameRead && frame != null && !frame.Empty())
+                        {
+                            // Reset failure counter on successful read
+                            _consecutiveFailures = 0;
+
                             // Apply processing if needed
                             var processedFrame = Settings.EnableProcessing ? ProcessFrame(frame) : frame;
 
-                            // Convert to bitmap
-                            var bitmap = BitmapConverter.ToBitmap(processedFrame);
+                            try
+                            {
+                                // Convert to bitmap
+                                var bitmap = BitmapConverter.ToBitmap(processedFrame);
 
-                            // Raise frame captured event
-                            OnFrameCaptured(new FrameCapturedEventArgs(bitmap, DateTime.Now));
+                                // Raise frame captured event
+                                OnFrameCaptured(new FrameCapturedEventArgs(bitmap, DateTime.Now));
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error converting frame to bitmap: {ex.Message}");
+                            }
 
                             // Clean up processed frame if it's different from original
                             if (processedFrame != frame)
@@ -376,21 +557,35 @@ namespace DeepCamClient
                                 processedFrame?.Dispose();
                             }
                         }
+                        else
+                        {
+                            _consecutiveFailures++;
+                            if (_consecutiveFailures >= MAX_CONSECUTIVE_FAILURES)
+                            {
+                                OnErrorOccurred("Camera stopped providing frames.");
+                                break;
+                            }
+                        }
 
                         // Frame rate control
                         var delayMs = Settings.Fps > 0 ? (int)(1000.0 / Settings.Fps) : 33;
-                        Thread.Sleep(Math.Max(1, delayMs));
+                        Thread.Sleep(Math.Max(1, Math.Min(delayMs, 100))); // Cap delay at 100ms
                     }
                     catch (Exception ex)
                     {
+                        _consecutiveFailures++;
                         OnErrorOccurred($"Frame capture error: {ex.Message}");
 
-                        if (!Settings.ContinueOnError)
+                        if (!Settings.ContinueOnError || _consecutiveFailures >= MAX_CONSECUTIVE_FAILURES)
                             break;
 
-                        Thread.Sleep(100); // Brief pause before retry
+                        Thread.Sleep(200); // Longer pause for recovery
                     }
                 }
+            }
+            finally
+            {
+                frame?.Dispose();
             }
         }
 
@@ -466,7 +661,7 @@ namespace DeepCamClient
         }
     }
 
-    // Supporting classes and enums
+    // Supporting classes remain the same as in previous version
     public class CameraDevice
     {
         public int Index { get; set; }
@@ -481,13 +676,11 @@ namespace DeepCamClient
         public double Fps { get; set; } = 30;
         public int BufferSize { get; set; } = 1;
 
-        // Image adjustment properties
-        public double Brightness { get; set; } = -1; // -1 means don't set
+        public double Brightness { get; set; } = -1;
         public double Contrast { get; set; } = -1;
         public double Saturation { get; set; } = -1;
         public double Hue { get; set; } = -1;
 
-        // Processing options
         public bool EnableProcessing { get; set; } = false;
         public bool ConvertToGrayscale { get; set; } = false;
         public bool ApplyGaussianBlur { get; set; } = false;
@@ -528,7 +721,6 @@ namespace DeepCamClient
         Error
     }
 
-    // Event argument classes
     public class FrameCapturedEventArgs : EventArgs
     {
         public Bitmap Frame { get; }
