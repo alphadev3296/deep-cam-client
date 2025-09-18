@@ -536,7 +536,7 @@ namespace DeepCamClient
                             _consecutiveFailures = 0;
 
                             // Apply processing if needed
-                            var processedFrame = Settings.EnableProcessing ? ProcessFrame(frame) : frame;
+                            var processedFrame = ProcessFrame(frame);
 
                             try
                             {
@@ -591,27 +591,38 @@ namespace DeepCamClient
 
         private Mat ProcessFrame(Mat inputFrame)
         {
-            if (!Settings.EnableProcessing)
-                return inputFrame;
-
             try
             {
                 var processedFrame = new Mat();
 
+                inputFrame.CopyTo(processedFrame);
+
                 // Apply processing based on settings
                 if (Settings.ConvertToGrayscale)
                 {
-                    Cv2.CvtColor(inputFrame, processedFrame, ColorConversionCodes.BGR2GRAY);
+                    Cv2.CvtColor(processedFrame, processedFrame, ColorConversionCodes.BGR2GRAY);
                     Cv2.CvtColor(processedFrame, processedFrame, ColorConversionCodes.GRAY2BGR);
                 }
-                else if (Settings.ApplyGaussianBlur && Settings.BlurKernelSize > 0)
+                if (Settings.ApplyGaussianBlur && Settings.BlurKernelSize > 0)
                 {
                     var kernelSize = new OpenCvSharp.Size(Settings.BlurKernelSize, Settings.BlurKernelSize);
-                    Cv2.GaussianBlur(inputFrame, processedFrame, kernelSize, 0);
+                    Cv2.GaussianBlur(processedFrame, processedFrame, kernelSize, 0);
                 }
-                else
+                if (Settings.ApplyContrast || Settings.ApplyBrightness)
                 {
-                    inputFrame.CopyTo(processedFrame);
+                    double alpha = 1.0;   // e.g., 1.0 = normal, 1.5 = more contrast
+                    double beta = 0.0; // e.g., 0 = no change, 50 = brighter, -50 = darker
+
+                    if (Settings.ApplyContrast)
+                    {
+                        alpha = Settings.Contrast / 50.0;
+                    }
+                    if (Settings.ApplyBrightness)
+                    {
+                        beta = Settings.Brightness - 50.0;
+                    }
+
+                    Cv2.ConvertScaleAbs(processedFrame, processedFrame, alpha, beta);
                 }
 
                 return processedFrame;
@@ -681,7 +692,8 @@ namespace DeepCamClient
         public double Saturation { get; set; } = -1;
         public double Hue { get; set; } = -1;
 
-        public bool EnableProcessing { get; set; } = false;
+        public bool ApplyBrightness { get; set; } = false;
+        public bool ApplyContrast { get; set; } = false;
         public bool ConvertToGrayscale { get; set; } = false;
         public bool ApplyGaussianBlur { get; set; } = false;
         public int BlurKernelSize { get; set; } = 15;

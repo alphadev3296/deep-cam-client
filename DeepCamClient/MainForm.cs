@@ -13,20 +13,6 @@ namespace DeepCamClient
         private List<CameraDevice> _availableDevices;
         private bool _isFormClosing = false;
 
-        // UI Controls (assuming these exist in your form designer)
-        // private ComboBox comboBoxDevices;
-        // private Button buttonRefreshDevices;
-        // private Button buttonStart;
-        // private Button buttonStop;
-        // private Button buttonCapture;
-        // private Button buttonShowInfo;
-        // private PictureBox pictureBoxPreview;
-        // private Label labelStatus;
-        // private TrackBar trackBarBrightness;
-        // private TrackBar trackBarContrast;
-        // private CheckBox checkBoxGrayscale;
-        // private CheckBox checkBoxBlur;
-
         public MainForm()
         {
             InitializeComponent();
@@ -45,7 +31,7 @@ namespace DeepCamClient
             // Configure default settings
             _webCamSource.Settings.Width = 640;
             _webCamSource.Settings.Height = 480;
-            _webCamSource.Settings.Fps = 30;
+            _webCamSource.Settings.Fps = 5;
             _webCamSource.Settings.BufferSize = 1;
             _webCamSource.Settings.ContinueOnError = true;
         }
@@ -229,29 +215,17 @@ namespace DeepCamClient
             var settings = _webCamSource.Settings;
 
             // Apply brightness and contrast from trackbars
-            if (trackBarBrightness != null)
-            {
-                settings.Brightness = trackBarBrightness.Value;
-            }
+            settings.ApplyBrightness = checkBoxBrightness.Checked;
+            settings.Brightness = trackBarBrightness.Value;
 
-            if (trackBarContrast != null)
-            {
-                settings.Contrast = trackBarContrast.Value;
-            }
+            settings.ApplyContrast = checkBoxContrast.Checked;
+            settings.Contrast = trackBarContrast.Value;
+
+            settings.ApplyGaussianBlur = checkBoxBlur.Checked;
+            settings.BlurKernelSize = (int)(trackBarBlur.Value / 2) * 2 + 1;
 
             // Apply processing settings from checkboxes
-            if (checkBoxGrayscale != null)
-            {
-                settings.ConvertToGrayscale = checkBoxGrayscale.Checked;
-                settings.EnableProcessing = checkBoxGrayscale.Checked || settings.ApplyGaussianBlur;
-            }
-
-            if (checkBoxBlur != null)
-            {
-                settings.ApplyGaussianBlur = checkBoxBlur.Checked;
-                settings.EnableProcessing = settings.ConvertToGrayscale || checkBoxBlur.Checked;
-                settings.BlurKernelSize = 15; // Fixed blur size, could be made configurable
-            }
+            settings.ConvertToGrayscale = checkBoxGrayscale.Checked;
 
             _webCamSource.UpdateSettings(settings);
         }
@@ -354,9 +328,7 @@ namespace DeepCamClient
         {
             if (_webCamSource.IsOpened)
             {
-                var settings = _webCamSource.Settings;
-                settings.Brightness = trackBarBrightness.Value;
-                _webCamSource.UpdateSettings(settings);
+                ApplyUISettingsToCamera();
             }
         }
 
@@ -364,9 +336,7 @@ namespace DeepCamClient
         {
             if (_webCamSource.IsOpened)
             {
-                var settings = _webCamSource.Settings;
-                settings.Contrast = trackBarContrast.Value;
-                _webCamSource.UpdateSettings(settings);
+                ApplyUISettingsToCamera();
             }
         }
 
@@ -382,6 +352,7 @@ namespace DeepCamClient
         {
             if (_webCamSource.IsOpened)
             {
+                UpdateUI();
                 ApplyUISettingsToCamera();
             }
         }
@@ -420,37 +391,26 @@ namespace DeepCamClient
                 bool isOpened = _webCamSource.IsOpened;
 
                 // Update button states
-                if (buttonStart != null)
-                    buttonStart.Enabled = !isCapturing && comboBoxDevices.SelectedIndex >= 0;
-
-                if (buttonStop != null)
-                    buttonStop.Enabled = isCapturing;
-
-                if (buttonCapture != null)
-                    buttonCapture.Enabled = isCapturing;
-
-                if (buttonShowInfo != null)
-                    buttonShowInfo.Enabled = isOpened;
-
-                if (buttonRefreshDevices != null)
-                    buttonRefreshDevices.Enabled = !isCapturing;
-
-                if (comboBoxDevices != null)
-                    comboBoxDevices.Enabled = !isCapturing;
-
-                // Update trackbars
-                if (trackBarBrightness != null)
-                    trackBarBrightness.Enabled = isOpened;
-
-                if (trackBarContrast != null)
-                    trackBarContrast.Enabled = isOpened;
+                buttonStart.Enabled = !isCapturing && comboBoxDevices.SelectedIndex >= 0;
+                buttonStop.Enabled = isCapturing;
+                buttonCapture.Enabled = isCapturing;
+                buttonShowInfo.Enabled = isOpened;
+                buttonRefreshDevices.Enabled = !isCapturing;
+                comboBoxDevices.Enabled = !isCapturing;
+                trackBarBrightness.Enabled = isOpened;
+                trackBarContrast.Enabled = isOpened;
+                trackBarBlur.Enabled = isOpened;
 
                 // Update checkboxes
-                if (checkBoxGrayscale != null)
-                    checkBoxGrayscale.Enabled = isOpened;
+                checkBoxBrightness.Enabled = isOpened;
+                checkBoxContrast.Enabled = isOpened;
+                checkBoxGrayscale.Enabled = isOpened;
+                checkBoxBlur.Enabled = isOpened;
 
-                if (checkBoxBlur != null)
-                    checkBoxBlur.Enabled = isOpened;
+                // Update trackbars
+                trackBarBrightness.Enabled = checkBoxBrightness.Checked;
+                trackBarContrast.Enabled = checkBoxContrast.Checked;
+                trackBarBlur.Enabled = checkBoxBlur.Checked;
             }
             catch (Exception ex)
             {
@@ -616,7 +576,6 @@ namespace DeepCamClient
                     break;
             }
 
-            settings.EnableProcessing = settings.ConvertToGrayscale || settings.ApplyGaussianBlur;
             _webCamSource.UpdateSettings(settings);
         }
 
@@ -634,6 +593,33 @@ namespace DeepCamClient
                 return processedFrame;
             };
             */
+        }
+
+        private void checkBoxBrightness_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_webCamSource.IsOpened)
+            {
+                UpdateUI();
+                ApplyUISettingsToCamera();
+            }
+        }
+
+        private void checkBoxContrast_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_webCamSource.IsOpened)
+
+            {
+                UpdateUI();
+                ApplyUISettingsToCamera();
+            }
+        }
+
+        private void trackBarBlur_ValueChanged(object sender, EventArgs e)
+        {
+            if (_webCamSource.IsOpened)
+            {
+                ApplyUISettingsToCamera();
+            }
         }
     }
 
