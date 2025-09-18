@@ -227,6 +227,9 @@ namespace DeepCamClient
             // Apply processing settings from checkboxes
             settings.ConvertToGrayscale = checkBoxGrayscale.Checked;
 
+            // FPS
+            settings.Fps = int.Parse(comboBoxFPS.Text);
+
             _webCamSource.UpdateSettings(settings);
         }
 
@@ -495,16 +498,6 @@ namespace DeepCamClient
             }
         }
 
-        private void SetCameraFPS(double fps)
-        {
-            if (_webCamSource.IsOpened)
-            {
-                var settings = _webCamSource.Settings;
-                settings.Fps = fps;
-                _webCamSource.UpdateSettings(settings);
-            }
-        }
-
         // Menu event handlers (if you have menu items)
         private void menuItemResolution640x480_Click(object sender, EventArgs e)
         {
@@ -519,21 +512,6 @@ namespace DeepCamClient
         private void menuItemResolution1920x1080_Click(object sender, EventArgs e)
         {
             SetCameraResolution(1920, 1080);
-        }
-
-        private void menuItemFPS15_Click(object sender, EventArgs e)
-        {
-            SetCameraFPS(15);
-        }
-
-        private void menuItemFPS30_Click(object sender, EventArgs e)
-        {
-            SetCameraFPS(30);
-        }
-
-        private void menuItemFPS60_Click(object sender, EventArgs e)
-        {
-            SetCameraFPS(60);
         }
 
         // Advanced features
@@ -615,6 +593,14 @@ namespace DeepCamClient
         }
 
         private void trackBarBlur_ValueChanged(object sender, EventArgs e)
+        {
+            if (_webCamSource.IsOpened)
+            {
+                ApplyUISettingsToCamera();
+            }
+        }
+
+        private void comboBoxFPS_TextChanged(object sender, EventArgs e)
         {
             if (_webCamSource.IsOpened)
             {

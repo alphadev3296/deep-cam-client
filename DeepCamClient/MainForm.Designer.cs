@@ -38,7 +38,8 @@
             this.groupBoxCapture = new System.Windows.Forms.GroupBox();
             this.buttonStop = new System.Windows.Forms.Button();
             this.buttonCapture = new System.Windows.Forms.Button();
-            this.groupBoxEffect = new System.Windows.Forms.GroupBox();
+            this.groupBoxOutput = new System.Windows.Forms.GroupBox();
+            this.comboBoxFPS = new System.Windows.Forms.ComboBox();
             this.trackBarBlur = new System.Windows.Forms.TrackBar();
             this.checkBoxContrast = new System.Windows.Forms.CheckBox();
             this.checkBoxBrightness = new System.Windows.Forms.CheckBox();
@@ -47,11 +48,12 @@
             this.checkBoxBlur = new System.Windows.Forms.CheckBox();
             this.checkBoxGrayscale = new System.Windows.Forms.CheckBox();
             this.labelStatus = new System.Windows.Forms.Label();
+            this.labelFps = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.panel1.SuspendLayout();
             this.groupBoxDetails.SuspendLayout();
             this.groupBoxCapture.SuspendLayout();
-            this.groupBoxEffect.SuspendLayout();
+            this.groupBoxOutput.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBlur)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBrightness)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarContrast)).BeginInit();
@@ -69,9 +71,9 @@
             // 
             this.buttonRefreshDevices.Location = new System.Drawing.Point(12, 12);
             this.buttonRefreshDevices.Name = "buttonRefreshDevices";
-            this.buttonRefreshDevices.Size = new System.Drawing.Size(75, 23);
+            this.buttonRefreshDevices.Size = new System.Drawing.Size(122, 23);
             this.buttonRefreshDevices.TabIndex = 1;
-            this.buttonRefreshDevices.Text = "Refresh";
+            this.buttonRefreshDevices.Text = "Refresh Devices";
             this.buttonRefreshDevices.UseVisualStyleBackColor = true;
             this.buttonRefreshDevices.Click += new System.EventHandler(this.buttonRefreshDevices_Click);
             // 
@@ -90,7 +92,7 @@
             this.pictureBoxPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBoxPreview.Location = new System.Drawing.Point(227, 0);
             this.pictureBoxPreview.Name = "pictureBoxPreview";
-            this.pictureBoxPreview.Size = new System.Drawing.Size(757, 633);
+            this.pictureBoxPreview.Size = new System.Drawing.Size(757, 651);
             this.pictureBoxPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBoxPreview.TabIndex = 3;
             this.pictureBoxPreview.TabStop = false;
@@ -99,19 +101,19 @@
             // 
             this.panel1.Controls.Add(this.groupBoxDetails);
             this.panel1.Controls.Add(this.groupBoxCapture);
-            this.panel1.Controls.Add(this.groupBoxEffect);
+            this.panel1.Controls.Add(this.groupBoxOutput);
             this.panel1.Controls.Add(this.buttonRefreshDevices);
             this.panel1.Controls.Add(this.comboBoxDevices);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(227, 633);
+            this.panel1.Size = new System.Drawing.Size(227, 651);
             this.panel1.TabIndex = 4;
             // 
             // groupBoxDetails
             // 
             this.groupBoxDetails.Controls.Add(this.buttonShowInfo);
-            this.groupBoxDetails.Location = new System.Drawing.Point(12, 535);
+            this.groupBoxDetails.Location = new System.Drawing.Point(12, 579);
             this.groupBoxDetails.Name = "groupBoxDetails";
             this.groupBoxDetails.Size = new System.Drawing.Size(200, 57);
             this.groupBoxDetails.TabIndex = 15;
@@ -160,26 +162,44 @@
             this.buttonCapture.UseVisualStyleBackColor = true;
             this.buttonCapture.Click += new System.EventHandler(this.buttonCapture_Click);
             // 
-            // groupBoxEffect
+            // groupBoxOutput
             // 
-            this.groupBoxEffect.Controls.Add(this.trackBarBlur);
-            this.groupBoxEffect.Controls.Add(this.checkBoxContrast);
-            this.groupBoxEffect.Controls.Add(this.checkBoxBrightness);
-            this.groupBoxEffect.Controls.Add(this.trackBarBrightness);
-            this.groupBoxEffect.Controls.Add(this.trackBarContrast);
-            this.groupBoxEffect.Controls.Add(this.checkBoxBlur);
-            this.groupBoxEffect.Controls.Add(this.checkBoxGrayscale);
-            this.groupBoxEffect.Location = new System.Drawing.Point(12, 202);
-            this.groupBoxEffect.Name = "groupBoxEffect";
-            this.groupBoxEffect.Size = new System.Drawing.Size(200, 289);
-            this.groupBoxEffect.TabIndex = 13;
-            this.groupBoxEffect.TabStop = false;
-            this.groupBoxEffect.Text = "Effect";
+            this.groupBoxOutput.Controls.Add(this.labelFps);
+            this.groupBoxOutput.Controls.Add(this.comboBoxFPS);
+            this.groupBoxOutput.Controls.Add(this.trackBarBlur);
+            this.groupBoxOutput.Controls.Add(this.checkBoxContrast);
+            this.groupBoxOutput.Controls.Add(this.checkBoxBrightness);
+            this.groupBoxOutput.Controls.Add(this.trackBarBrightness);
+            this.groupBoxOutput.Controls.Add(this.trackBarContrast);
+            this.groupBoxOutput.Controls.Add(this.checkBoxBlur);
+            this.groupBoxOutput.Controls.Add(this.checkBoxGrayscale);
+            this.groupBoxOutput.Location = new System.Drawing.Point(12, 202);
+            this.groupBoxOutput.Name = "groupBoxOutput";
+            this.groupBoxOutput.Size = new System.Drawing.Size(200, 371);
+            this.groupBoxOutput.TabIndex = 13;
+            this.groupBoxOutput.TabStop = false;
+            this.groupBoxOutput.Text = "Output";
+            // 
+            // comboBoxFPS
+            // 
+            this.comboBoxFPS.FormattingEnabled = true;
+            this.comboBoxFPS.Items.AddRange(new object[] {
+            "10",
+            "15",
+            "30",
+            "5",
+            "60"});
+            this.comboBoxFPS.Location = new System.Drawing.Point(61, 22);
+            this.comboBoxFPS.Name = "comboBoxFPS";
+            this.comboBoxFPS.Size = new System.Drawing.Size(121, 23);
+            this.comboBoxFPS.TabIndex = 14;
+            this.comboBoxFPS.Text = "30";
+            this.comboBoxFPS.TextChanged += new System.EventHandler(this.comboBoxFPS_TextChanged);
             // 
             // trackBarBlur
             // 
             this.trackBarBlur.LargeChange = 6;
-            this.trackBarBlur.Location = new System.Drawing.Point(6, 222);
+            this.trackBarBlur.Location = new System.Drawing.Point(6, 316);
             this.trackBarBlur.Maximum = 51;
             this.trackBarBlur.Minimum = 1;
             this.trackBarBlur.Name = "trackBarBlur";
@@ -192,7 +212,7 @@
             // checkBoxContrast
             // 
             this.checkBoxContrast.AutoSize = true;
-            this.checkBoxContrast.Location = new System.Drawing.Point(6, 96);
+            this.checkBoxContrast.Location = new System.Drawing.Point(6, 190);
             this.checkBoxContrast.Name = "checkBoxContrast";
             this.checkBoxContrast.Size = new System.Drawing.Size(71, 19);
             this.checkBoxContrast.TabIndex = 12;
@@ -203,7 +223,7 @@
             // checkBoxBrightness
             // 
             this.checkBoxBrightness.AutoSize = true;
-            this.checkBoxBrightness.Location = new System.Drawing.Point(6, 22);
+            this.checkBoxBrightness.Location = new System.Drawing.Point(6, 116);
             this.checkBoxBrightness.Name = "checkBoxBrightness";
             this.checkBoxBrightness.Size = new System.Drawing.Size(81, 19);
             this.checkBoxBrightness.TabIndex = 11;
@@ -213,7 +233,7 @@
             // 
             // trackBarBrightness
             // 
-            this.trackBarBrightness.Location = new System.Drawing.Point(6, 45);
+            this.trackBarBrightness.Location = new System.Drawing.Point(6, 139);
             this.trackBarBrightness.Maximum = 100;
             this.trackBarBrightness.Name = "trackBarBrightness";
             this.trackBarBrightness.Size = new System.Drawing.Size(188, 45);
@@ -223,7 +243,7 @@
             // 
             // trackBarContrast
             // 
-            this.trackBarContrast.Location = new System.Drawing.Point(6, 121);
+            this.trackBarContrast.Location = new System.Drawing.Point(6, 215);
             this.trackBarContrast.Maximum = 100;
             this.trackBarContrast.Name = "trackBarContrast";
             this.trackBarContrast.Size = new System.Drawing.Size(188, 45);
@@ -234,7 +254,7 @@
             // checkBoxBlur
             // 
             this.checkBoxBlur.AutoSize = true;
-            this.checkBoxBlur.Location = new System.Drawing.Point(6, 197);
+            this.checkBoxBlur.Location = new System.Drawing.Point(6, 291);
             this.checkBoxBlur.Name = "checkBoxBlur";
             this.checkBoxBlur.Size = new System.Drawing.Size(47, 19);
             this.checkBoxBlur.TabIndex = 10;
@@ -245,7 +265,7 @@
             // checkBoxGrayscale
             // 
             this.checkBoxGrayscale.AutoSize = true;
-            this.checkBoxGrayscale.Location = new System.Drawing.Point(6, 172);
+            this.checkBoxGrayscale.Location = new System.Drawing.Point(6, 266);
             this.checkBoxGrayscale.Name = "checkBoxGrayscale";
             this.checkBoxGrayscale.Size = new System.Drawing.Size(80, 19);
             this.checkBoxGrayscale.TabIndex = 9;
@@ -256,22 +276,31 @@
             // labelStatus
             // 
             this.labelStatus.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.labelStatus.Location = new System.Drawing.Point(0, 633);
+            this.labelStatus.Location = new System.Drawing.Point(0, 651);
             this.labelStatus.Name = "labelStatus";
             this.labelStatus.Size = new System.Drawing.Size(984, 15);
             this.labelStatus.TabIndex = 5;
             this.labelStatus.Text = "Status";
             // 
+            // labelFps
+            // 
+            this.labelFps.AutoSize = true;
+            this.labelFps.Location = new System.Drawing.Point(6, 25);
+            this.labelFps.Name = "labelFps";
+            this.labelFps.Size = new System.Drawing.Size(29, 15);
+            this.labelFps.TabIndex = 15;
+            this.labelFps.Text = "FPS:";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(984, 648);
+            this.ClientSize = new System.Drawing.Size(984, 666);
             this.Controls.Add(this.pictureBoxPreview);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.labelStatus);
             this.DoubleBuffered = true;
-            this.MinimumSize = new System.Drawing.Size(1000, 521);
+            this.MinimumSize = new System.Drawing.Size(1000, 622);
             this.Name = "MainForm";
             this.Text = "Deep Cam Client";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
@@ -281,8 +310,8 @@
             this.panel1.ResumeLayout(false);
             this.groupBoxDetails.ResumeLayout(false);
             this.groupBoxCapture.ResumeLayout(false);
-            this.groupBoxEffect.ResumeLayout(false);
-            this.groupBoxEffect.PerformLayout();
+            this.groupBoxOutput.ResumeLayout(false);
+            this.groupBoxOutput.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBlur)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBrightness)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarContrast)).EndInit();
@@ -302,7 +331,7 @@
         private CheckBox checkBoxGrayscale;
         private Button buttonShowInfo;
         private Button buttonCapture;
-        private GroupBox groupBoxEffect;
+        private GroupBox groupBoxOutput;
         private GroupBox groupBoxDetails;
         private GroupBox groupBoxCapture;
         private Label labelStatus;
@@ -311,5 +340,7 @@
         private CheckBox checkBoxContrast;
         private CheckBox checkBoxBrightness;
         private TrackBar trackBarBlur;
+        private ComboBox comboBoxFPS;
+        private Label labelFps;
     }
 }

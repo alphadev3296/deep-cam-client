@@ -569,7 +569,7 @@ namespace DeepCamClient
 
                         // Frame rate control
                         var delayMs = Settings.Fps > 0 ? (int)(1000.0 / Settings.Fps) : 33;
-                        Thread.Sleep(Math.Max(1, Math.Min(delayMs, 100))); // Cap delay at 100ms
+                        Thread.Sleep(Math.Max(1, delayMs)); // Cap delay at 100ms
                     }
                     catch (Exception ex)
                     {
