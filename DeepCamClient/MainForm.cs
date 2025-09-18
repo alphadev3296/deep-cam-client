@@ -53,45 +53,7 @@ namespace DeepCamClient
         private void FormMain_Load(object sender, EventArgs e)
         {
             LoadDevices();
-            InitializeControls();
             UpdateUI();
-        }
-
-        private void InitializeControls()
-        {
-            // Initialize trackbars (if they exist)
-            if (trackBarBrightness != null)
-            {
-                trackBarBrightness.Minimum = 0;
-                trackBarBrightness.Maximum = 100;
-                trackBarBrightness.Value = 50;
-                trackBarBrightness.ValueChanged += TrackBarBrightness_ValueChanged;
-            }
-
-            if (trackBarContrast != null)
-            {
-                trackBarContrast.Minimum = 0;
-                trackBarContrast.Maximum = 100;
-                trackBarContrast.Value = 50;
-                trackBarContrast.ValueChanged += TrackBarContrast_ValueChanged;
-            }
-
-            // Initialize checkboxes (if they exist)
-            if (checkBoxGrayscale != null)
-            {
-                checkBoxGrayscale.CheckedChanged += CheckBoxGrayscale_CheckedChanged;
-            }
-
-            if (checkBoxBlur != null)
-            {
-                checkBoxBlur.CheckedChanged += CheckBoxBlur_CheckedChanged;
-            }
-
-            // Set PictureBox mode
-            if (pictureBoxPreview != null)
-            {
-                pictureBoxPreview.SizeMode = PictureBoxSizeMode.Zoom;
-            }
         }
 
         private void LoadDevices()
