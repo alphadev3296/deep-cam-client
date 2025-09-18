@@ -29,7 +29,7 @@ namespace DeepCamClient
             _webCamSource.StatusChanged += OnStatusChanged;
 
             // Configure default combo boxes
-            comboBoxFPS.SelectedIndex = 1;
+            comboBoxFPS.SelectedIndex = 3;
             comboBoxResolution.SelectedIndex = 0;
 
             // Configure default settings
