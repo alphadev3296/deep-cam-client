@@ -28,10 +28,14 @@ namespace DeepCamClient
             _webCamSource.ErrorOccurred += OnErrorOccurred;
             _webCamSource.StatusChanged += OnStatusChanged;
 
+            // Configure default combo boxes
+            comboBoxFPS.SelectedIndex = 1;
+            comboBoxResolution.SelectedIndex = 0;
+
             // Configure default settings
             _webCamSource.Settings.Width = 640;
             _webCamSource.Settings.Height = 480;
-            _webCamSource.Settings.Fps = 5;
+            _webCamSource.Settings.Fps = 10;
             _webCamSource.Settings.BufferSize = 1;
             _webCamSource.Settings.ContinueOnError = true;
         }
@@ -230,6 +234,9 @@ namespace DeepCamClient
             // FPS
             settings.Fps = int.Parse(comboBoxFPS.Text);
 
+            // Resolution
+            WebCamSourceExtensions.SetResolutionPreset(_webCamSource, comboBoxResolution.Text);
+
             _webCamSource.UpdateSettings(settings);
         }
 
@@ -403,6 +410,12 @@ namespace DeepCamClient
                 trackBarBrightness.Enabled = isOpened;
                 trackBarContrast.Enabled = isOpened;
                 trackBarBlur.Enabled = isOpened;
+
+                // Update comboboxes
+                labelFps.Enabled = isOpened;
+                comboBoxFPS.Enabled = isOpened;
+                labelResolution.Enabled = isOpened;
+                comboBoxResolution.Enabled = isOpened;
 
                 // Update checkboxes
                 checkBoxBrightness.Enabled = isOpened;
@@ -600,7 +613,15 @@ namespace DeepCamClient
             }
         }
 
-        private void comboBoxFPS_TextChanged(object sender, EventArgs e)
+        private void comboBoxResolution_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_webCamSource.IsOpened)
+            {
+                ApplyUISettingsToCamera();
+            }
+        }
+
+        private void comboBoxFPS_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_webCamSource.IsOpened)
             {

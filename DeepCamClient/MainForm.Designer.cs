@@ -39,6 +39,9 @@
             this.buttonStop = new System.Windows.Forms.Button();
             this.buttonCapture = new System.Windows.Forms.Button();
             this.groupBoxOutput = new System.Windows.Forms.GroupBox();
+            this.labelResolution = new System.Windows.Forms.Label();
+            this.comboBoxResolution = new System.Windows.Forms.ComboBox();
+            this.labelFps = new System.Windows.Forms.Label();
             this.comboBoxFPS = new System.Windows.Forms.ComboBox();
             this.trackBarBlur = new System.Windows.Forms.TrackBar();
             this.checkBoxContrast = new System.Windows.Forms.CheckBox();
@@ -48,7 +51,6 @@
             this.checkBoxBlur = new System.Windows.Forms.CheckBox();
             this.checkBoxGrayscale = new System.Windows.Forms.CheckBox();
             this.labelStatus = new System.Windows.Forms.Label();
-            this.labelFps = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.panel1.SuspendLayout();
             this.groupBoxDetails.SuspendLayout();
@@ -61,6 +63,7 @@
             // 
             // comboBoxDevices
             // 
+            this.comboBoxDevices.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDevices.FormattingEnabled = true;
             this.comboBoxDevices.Location = new System.Drawing.Point(12, 41);
             this.comboBoxDevices.Name = "comboBoxDevices";
@@ -79,20 +82,21 @@
             // 
             // buttonStart
             // 
-            this.buttonStart.Location = new System.Drawing.Point(44, 27);
+            this.buttonStart.Location = new System.Drawing.Point(10, 27);
             this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(112, 23);
+            this.buttonStart.Size = new System.Drawing.Size(87, 23);
             this.buttonStart.TabIndex = 2;
-            this.buttonStart.Text = "Start Capture";
+            this.buttonStart.Text = "Start";
             this.buttonStart.UseVisualStyleBackColor = true;
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
             // 
             // pictureBoxPreview
             // 
+            this.pictureBoxPreview.BackColor = System.Drawing.SystemColors.ControlDark;
             this.pictureBoxPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBoxPreview.Location = new System.Drawing.Point(227, 0);
             this.pictureBoxPreview.Name = "pictureBoxPreview";
-            this.pictureBoxPreview.Size = new System.Drawing.Size(757, 651);
+            this.pictureBoxPreview.Size = new System.Drawing.Size(757, 582);
             this.pictureBoxPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBoxPreview.TabIndex = 3;
             this.pictureBoxPreview.TabStop = false;
@@ -107,13 +111,13 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(227, 651);
+            this.panel1.Size = new System.Drawing.Size(227, 582);
             this.panel1.TabIndex = 4;
             // 
             // groupBoxDetails
             // 
             this.groupBoxDetails.Controls.Add(this.buttonShowInfo);
-            this.groupBoxDetails.Location = new System.Drawing.Point(12, 579);
+            this.groupBoxDetails.Location = new System.Drawing.Point(12, 515);
             this.groupBoxDetails.Name = "groupBoxDetails";
             this.groupBoxDetails.Size = new System.Drawing.Size(200, 57);
             this.groupBoxDetails.TabIndex = 15;
@@ -137,26 +141,26 @@
             this.groupBoxCapture.Controls.Add(this.buttonCapture);
             this.groupBoxCapture.Location = new System.Drawing.Point(12, 70);
             this.groupBoxCapture.Name = "groupBoxCapture";
-            this.groupBoxCapture.Size = new System.Drawing.Size(200, 126);
+            this.groupBoxCapture.Size = new System.Drawing.Size(200, 88);
             this.groupBoxCapture.TabIndex = 14;
             this.groupBoxCapture.TabStop = false;
             this.groupBoxCapture.Text = "Capture";
             // 
             // buttonStop
             // 
-            this.buttonStop.Location = new System.Drawing.Point(44, 56);
+            this.buttonStop.Location = new System.Drawing.Point(103, 27);
             this.buttonStop.Name = "buttonStop";
-            this.buttonStop.Size = new System.Drawing.Size(112, 23);
+            this.buttonStop.Size = new System.Drawing.Size(91, 23);
             this.buttonStop.TabIndex = 3;
-            this.buttonStop.Text = "Stop Capture";
+            this.buttonStop.Text = "Stop";
             this.buttonStop.UseVisualStyleBackColor = true;
             this.buttonStop.Click += new System.EventHandler(this.buttonStop_Click);
             // 
             // buttonCapture
             // 
-            this.buttonCapture.Location = new System.Drawing.Point(44, 85);
+            this.buttonCapture.Location = new System.Drawing.Point(10, 56);
             this.buttonCapture.Name = "buttonCapture";
-            this.buttonCapture.Size = new System.Drawing.Size(112, 23);
+            this.buttonCapture.Size = new System.Drawing.Size(184, 23);
             this.buttonCapture.TabIndex = 4;
             this.buttonCapture.Text = "Capture Frame";
             this.buttonCapture.UseVisualStyleBackColor = true;
@@ -164,6 +168,8 @@
             // 
             // groupBoxOutput
             // 
+            this.groupBoxOutput.Controls.Add(this.labelResolution);
+            this.groupBoxOutput.Controls.Add(this.comboBoxResolution);
             this.groupBoxOutput.Controls.Add(this.labelFps);
             this.groupBoxOutput.Controls.Add(this.comboBoxFPS);
             this.groupBoxOutput.Controls.Add(this.trackBarBlur);
@@ -173,33 +179,66 @@
             this.groupBoxOutput.Controls.Add(this.trackBarContrast);
             this.groupBoxOutput.Controls.Add(this.checkBoxBlur);
             this.groupBoxOutput.Controls.Add(this.checkBoxGrayscale);
-            this.groupBoxOutput.Location = new System.Drawing.Point(12, 202);
+            this.groupBoxOutput.Location = new System.Drawing.Point(12, 164);
             this.groupBoxOutput.Name = "groupBoxOutput";
-            this.groupBoxOutput.Size = new System.Drawing.Size(200, 371);
+            this.groupBoxOutput.Size = new System.Drawing.Size(200, 345);
             this.groupBoxOutput.TabIndex = 13;
             this.groupBoxOutput.TabStop = false;
             this.groupBoxOutput.Text = "Output";
             // 
+            // labelResolution
+            // 
+            this.labelResolution.AutoSize = true;
+            this.labelResolution.Location = new System.Drawing.Point(6, 63);
+            this.labelResolution.Name = "labelResolution";
+            this.labelResolution.Size = new System.Drawing.Size(29, 15);
+            this.labelResolution.TabIndex = 17;
+            this.labelResolution.Text = "RES:";
+            // 
+            // comboBoxResolution
+            // 
+            this.comboBoxResolution.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxResolution.FormattingEnabled = true;
+            this.comboBoxResolution.Items.AddRange(new object[] {
+            "VGA",
+            "HD",
+            "FHD",
+            "4K"});
+            this.comboBoxResolution.Location = new System.Drawing.Point(35, 60);
+            this.comboBoxResolution.Name = "comboBoxResolution";
+            this.comboBoxResolution.Size = new System.Drawing.Size(159, 23);
+            this.comboBoxResolution.TabIndex = 16;
+            this.comboBoxResolution.SelectedIndexChanged += new System.EventHandler(this.comboBoxResolution_SelectedIndexChanged);
+            // 
+            // labelFps
+            // 
+            this.labelFps.AutoSize = true;
+            this.labelFps.Location = new System.Drawing.Point(6, 25);
+            this.labelFps.Name = "labelFps";
+            this.labelFps.Size = new System.Drawing.Size(29, 15);
+            this.labelFps.TabIndex = 15;
+            this.labelFps.Text = "FPS:";
+            // 
             // comboBoxFPS
             // 
+            this.comboBoxFPS.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxFPS.FormattingEnabled = true;
             this.comboBoxFPS.Items.AddRange(new object[] {
+            "5",
             "10",
             "15",
             "30",
-            "5",
             "60"});
-            this.comboBoxFPS.Location = new System.Drawing.Point(61, 22);
+            this.comboBoxFPS.Location = new System.Drawing.Point(35, 22);
             this.comboBoxFPS.Name = "comboBoxFPS";
-            this.comboBoxFPS.Size = new System.Drawing.Size(121, 23);
+            this.comboBoxFPS.Size = new System.Drawing.Size(159, 23);
             this.comboBoxFPS.TabIndex = 14;
-            this.comboBoxFPS.Text = "30";
-            this.comboBoxFPS.TextChanged += new System.EventHandler(this.comboBoxFPS_TextChanged);
+            this.comboBoxFPS.SelectedIndexChanged += new System.EventHandler(this.comboBoxFPS_SelectedIndexChanged);
             // 
             // trackBarBlur
             // 
             this.trackBarBlur.LargeChange = 6;
-            this.trackBarBlur.Location = new System.Drawing.Point(6, 316);
+            this.trackBarBlur.Location = new System.Drawing.Point(6, 293);
             this.trackBarBlur.Maximum = 51;
             this.trackBarBlur.Minimum = 1;
             this.trackBarBlur.Name = "trackBarBlur";
@@ -212,7 +251,7 @@
             // checkBoxContrast
             // 
             this.checkBoxContrast.AutoSize = true;
-            this.checkBoxContrast.Location = new System.Drawing.Point(6, 190);
+            this.checkBoxContrast.Location = new System.Drawing.Point(6, 167);
             this.checkBoxContrast.Name = "checkBoxContrast";
             this.checkBoxContrast.Size = new System.Drawing.Size(71, 19);
             this.checkBoxContrast.TabIndex = 12;
@@ -223,7 +262,7 @@
             // checkBoxBrightness
             // 
             this.checkBoxBrightness.AutoSize = true;
-            this.checkBoxBrightness.Location = new System.Drawing.Point(6, 116);
+            this.checkBoxBrightness.Location = new System.Drawing.Point(6, 93);
             this.checkBoxBrightness.Name = "checkBoxBrightness";
             this.checkBoxBrightness.Size = new System.Drawing.Size(81, 19);
             this.checkBoxBrightness.TabIndex = 11;
@@ -233,7 +272,7 @@
             // 
             // trackBarBrightness
             // 
-            this.trackBarBrightness.Location = new System.Drawing.Point(6, 139);
+            this.trackBarBrightness.Location = new System.Drawing.Point(6, 116);
             this.trackBarBrightness.Maximum = 100;
             this.trackBarBrightness.Name = "trackBarBrightness";
             this.trackBarBrightness.Size = new System.Drawing.Size(188, 45);
@@ -243,7 +282,7 @@
             // 
             // trackBarContrast
             // 
-            this.trackBarContrast.Location = new System.Drawing.Point(6, 215);
+            this.trackBarContrast.Location = new System.Drawing.Point(6, 192);
             this.trackBarContrast.Maximum = 100;
             this.trackBarContrast.Name = "trackBarContrast";
             this.trackBarContrast.Size = new System.Drawing.Size(188, 45);
@@ -254,7 +293,7 @@
             // checkBoxBlur
             // 
             this.checkBoxBlur.AutoSize = true;
-            this.checkBoxBlur.Location = new System.Drawing.Point(6, 291);
+            this.checkBoxBlur.Location = new System.Drawing.Point(6, 268);
             this.checkBoxBlur.Name = "checkBoxBlur";
             this.checkBoxBlur.Size = new System.Drawing.Size(47, 19);
             this.checkBoxBlur.TabIndex = 10;
@@ -265,7 +304,7 @@
             // checkBoxGrayscale
             // 
             this.checkBoxGrayscale.AutoSize = true;
-            this.checkBoxGrayscale.Location = new System.Drawing.Point(6, 266);
+            this.checkBoxGrayscale.Location = new System.Drawing.Point(6, 243);
             this.checkBoxGrayscale.Name = "checkBoxGrayscale";
             this.checkBoxGrayscale.Size = new System.Drawing.Size(80, 19);
             this.checkBoxGrayscale.TabIndex = 9;
@@ -276,26 +315,17 @@
             // labelStatus
             // 
             this.labelStatus.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.labelStatus.Location = new System.Drawing.Point(0, 651);
+            this.labelStatus.Location = new System.Drawing.Point(0, 582);
             this.labelStatus.Name = "labelStatus";
             this.labelStatus.Size = new System.Drawing.Size(984, 15);
             this.labelStatus.TabIndex = 5;
             this.labelStatus.Text = "Status";
             // 
-            // labelFps
-            // 
-            this.labelFps.AutoSize = true;
-            this.labelFps.Location = new System.Drawing.Point(6, 25);
-            this.labelFps.Name = "labelFps";
-            this.labelFps.Size = new System.Drawing.Size(29, 15);
-            this.labelFps.TabIndex = 15;
-            this.labelFps.Text = "FPS:";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(984, 666);
+            this.ClientSize = new System.Drawing.Size(984, 597);
             this.Controls.Add(this.pictureBoxPreview);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.labelStatus);
@@ -342,5 +372,7 @@
         private TrackBar trackBarBlur;
         private ComboBox comboBoxFPS;
         private Label labelFps;
+        private ComboBox comboBoxResolution;
+        private Label labelResolution;
     }
 }
