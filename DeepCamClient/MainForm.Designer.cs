@@ -330,7 +330,7 @@
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.labelStatus);
             this.DoubleBuffered = true;
-            this.MinimumSize = new System.Drawing.Size(1000, 622);
+            this.MinimumSize = new System.Drawing.Size(1000, 636);
             this.Name = "MainForm";
             this.Text = "Deep Cam Client";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
