@@ -49,13 +49,14 @@ class CameraApp:
         """Setup the GUI layout"""
         # Main container with padding
         main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        main_frame.grid(row=0, column=0, sticky=tk.NSEW)
 
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         main_frame.columnconfigure(1, weight=1)
-        main_frame.rowconfigure(2, weight=1)
+        main_frame.rowconfigure(0, weight=1)
+        main_frame.rowconfigure(1, weight=1)
 
         # Left panel - controls
         self.setup_control_panel(main_frame)
@@ -69,7 +70,7 @@ class CameraApp:
     def setup_control_panel(self, parent: ttk.Frame) -> None:
         """Setup the left control panel"""
         control_frame = ttk.LabelFrame(parent, text="Controls", padding="10")
-        control_frame.grid(row=0, column=0, rowspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 10))
+        control_frame.grid(row=0, column=0, rowspan=2, sticky=tk.NSEW, padx=(0, 10))
 
         row = 0
 
@@ -80,19 +81,19 @@ class CameraApp:
         self.camera_combo = ttk.Combobox(
             control_frame, textvariable=self.selected_camera_var, state="readonly", width=25
         )
-        self.camera_combo.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 5))
+        self.camera_combo.grid(row=row, column=0, columnspan=2, sticky=tk.EW, pady=(0, 5))
         self.camera_combo.bind("<<ComboboxSelected>>", self.on_camera_selected)
         row += 1
 
         # Refresh cameras button
         ttk.Button(control_frame, text="Refresh Cameras", command=self.refresh_camera_list).grid(
-            row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10)
+            row=row, column=0, columnspan=2, sticky=tk.EW, pady=(0, 10)
         )
         row += 1
 
         # Separator
         ttk.Separator(control_frame, orient="horizontal").grid(
-            row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10
+            row=row, column=0, columnspan=2, sticky=tk.EW, pady=10
         )
         row += 1
 
@@ -101,13 +102,13 @@ class CameraApp:
         row += 1
 
         ttk.Button(control_frame, text="Choose Photo", command=self.choose_photo).grid(
-            row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10)
+            row=row, column=0, columnspan=2, sticky=tk.EW, pady=(0, 10)
         )
         row += 1
 
         # Separator
         ttk.Separator(control_frame, orient="horizontal").grid(
-            row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10
+            row=row, column=0, columnspan=2, sticky=tk.EW, pady=10
         )
         row += 1
 
@@ -117,20 +118,20 @@ class CameraApp:
 
         # Start/Stop streaming buttons
         button_frame = ttk.Frame(control_frame)
-        button_frame.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 5))
+        button_frame.grid(row=row, column=0, columnspan=2, sticky=tk.EW, pady=(0, 5))
         button_frame.columnconfigure(0, weight=1)
         button_frame.columnconfigure(1, weight=1)
 
         self.start_btn = ttk.Button(button_frame, text="Start Stream", command=self.start_streaming)
-        self.start_btn.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 5))
+        self.start_btn.grid(row=0, column=0, sticky=tk.EW, padx=(0, 5))
 
         self.stop_btn = ttk.Button(button_frame, text="Stop Stream", command=self.stop_streaming, state="disabled")
-        self.stop_btn.grid(row=0, column=1, sticky=(tk.W, tk.E))
+        self.stop_btn.grid(row=0, column=1, sticky=tk.EW)
         row += 1
 
         # Capture button
         ttk.Button(control_frame, text="Capture Frame", command=self.capture_frame).grid(
-            row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(5, 10)
+            row=row, column=0, columnspan=2, sticky=tk.EW, pady=(5, 10)
         )
         row += 1
 
@@ -150,7 +151,7 @@ class CameraApp:
     def setup_display_panel(self, parent: ttk.Frame) -> None:
         """Setup the right display panel"""
         display_frame = ttk.LabelFrame(parent, text="Video Display", padding="10")
-        display_frame.grid(row=0, column=1, rowspan=2, sticky=(tk.W, tk.E, tk.N, tk.S))
+        display_frame.grid(row=0, column=1, rowspan=2, sticky=tk.NSEW)
 
         # Configure display frame
         display_frame.columnconfigure(0, weight=1)
@@ -158,21 +159,21 @@ class CameraApp:
 
         # Create canvas for video display
         self.video_canvas = tk.Canvas(display_frame, bg="black", width=640, height=480)
-        self.video_canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.video_canvas.grid(row=0, column=0, sticky=tk.NSEW)
 
         # Add scrollbars (in case image is larger than canvas)
         v_scrollbar = ttk.Scrollbar(display_frame, orient="vertical", command=self.video_canvas.yview)
-        v_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        v_scrollbar.grid(row=0, column=1, sticky=tk.NS)
 
         h_scrollbar = ttk.Scrollbar(display_frame, orient="horizontal", command=self.video_canvas.xview)
-        h_scrollbar.grid(row=1, column=0, sticky=(tk.W, tk.E))
+        h_scrollbar.grid(row=1, column=0, sticky=tk.EW)
 
         self.video_canvas.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
 
     def setup_status_panel(self, parent: ttk.Frame) -> None:
         """Setup the bottom status panel"""
         status_frame = ttk.Frame(parent)
-        status_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(10, 0))
+        status_frame.grid(row=2, column=0, columnspan=2, sticky=tk.EW, pady=(10, 0))
         status_frame.columnconfigure(0, weight=1)
 
         # Status label
