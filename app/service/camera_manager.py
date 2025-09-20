@@ -17,7 +17,7 @@ class CameraManager:
     """Manages camera operations including detection, streaming, and capture"""
 
     def __init__(self) -> None:
-        self.current_camera: cv2.VideoCapture | None = None
+        self.current_camera = None
         self.camera_index = -1
         self.is_streaming = False
         self.stream_thread = None
@@ -80,7 +80,7 @@ class CameraManager:
             return True  # noqa: TRY300
 
         except Exception as e:
-            logger.exce(f"Error selecting camera {camera_index}: {e}")
+            logger.exception(f"Error selecting camera {camera_index}: {e}")
             return False
 
     def start_streaming(self, frame_callback: Callable[[np.ndarray], None]) -> bool:
