@@ -92,9 +92,7 @@ class CameraApp:
         row += 1
 
         # Separator
-        ttk.Separator(control_frame, orient="horizontal").grid(
-            row=row, column=0, columnspan=2, sticky=tk.EW, pady=10
-        )
+        ttk.Separator(control_frame, orient="horizontal").grid(row=row, column=0, columnspan=2, sticky=tk.EW, pady=10)
         row += 1
 
         # Photo Selection
@@ -107,9 +105,7 @@ class CameraApp:
         row += 1
 
         # Separator
-        ttk.Separator(control_frame, orient="horizontal").grid(
-            row=row, column=0, columnspan=2, sticky=tk.EW, pady=10
-        )
+        ttk.Separator(control_frame, orient="horizontal").grid(row=row, column=0, columnspan=2, sticky=tk.EW, pady=10)
         row += 1
 
         # Streaming Controls

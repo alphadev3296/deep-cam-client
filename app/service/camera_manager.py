@@ -11,6 +11,7 @@ from typing import Any
 import cv2
 import numpy as np
 from loguru import logger
+from pygrabber.dshow_graph import FilterGraph
 
 
 class CameraManager:
@@ -31,27 +32,16 @@ class CameraManager:
         Returns list of dicts with 'index' and 'name' keys
         """
         cameras = []
+        graph = FilterGraph()
+        device_list = graph.get_input_devices()
 
-        # Test camera indices 0-10 (should cover most systems)
-        for i in range(10):
+        for i, name in enumerate(device_list):
             cap = cv2.VideoCapture(i)
             if cap.isOpened():
-                # Try to read a frame to verify camera works
                 ret, _ = cap.read()
                 if ret:
-                    # Get camera name/info if available
-                    name = f"Camera {i}"
-                    try:
-                        # Try to get more descriptive name
-                        backend = cap.getBackendName()
-                        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        name = f"Camera {i} ({backend}) - {width}x{height}"
-                    except:  # noqa: E722, S110
-                        pass
-
                     cameras.append({"index": i, "name": name})
-                cap.release()
+            cap.release()
 
         return cameras
 
