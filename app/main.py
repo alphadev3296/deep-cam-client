@@ -5,7 +5,7 @@ import cv2
 from aiortc import MediaStreamTrack, RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
 from av import VideoFrame
 
-from app.core.env import config as cfg_env
+from app.const.env import config as cfg_env
 
 
 # Video capture + preprocessing track
