@@ -36,7 +36,7 @@ async def run_client(server_url: str) -> None:
 
     @pc.on("track")
     def on_track(track: MediaStreamTrack) -> None:
-        if isinstance(track, VideoStreamTrack):
+        if track.kind == "video":
             asyncio.ensure_future(display(track=track))  # noqa: RUF006
 
     offer = await pc.createOffer()
